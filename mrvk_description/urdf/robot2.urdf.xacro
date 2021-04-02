@@ -1,0 +1,149 @@
+<?xml version="1.0"?>
+<robot name="test_robot" xmlns:xacro="http://wiki.ros.org/xacro">
+
+    <xacro:include filename="$(find mrvk_description)/urdf/materials.urdf.xacro" />
+    <xacro:include filename="$(find mrvk_description)/urdf/robot2.plugins.xacro" />
+
+    <xacro:property name="laser_size_x" value="0.03"/>
+    <xacro:property name="laser_size_y" value="0.03"/>
+    <xacro:property name="laser_size_z" value="0.04"/>
+    <xacro:property name="laser_origin_x" value="0.20"/>
+    <xacro:property name="laser_origin_y" value="0"/>
+    <xacro:property name="laser_origin_z" value="0.12"/>
+
+
+    <xacro:macro name="default_inertial" params="mass">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0" />
+        </inertial>
+    </xacro:macro>
+
+    <!-- Macro box -->
+    <xacro:macro name="box_link" params="name size_x size_y size_z mass material_name">
+        <link name="${name}">
+            <visual>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${size_x} ${size_y} ${size_z}"/>
+                </geometry>
+
+                <material name="${material_name}"/>
+            </visual>
+
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <box size="${size_x} ${size_y} ${size_z}"/>
+                </geometry>
+            </collision>
+            <xacro:default_inertial mass="10" />
+        </link>
+    </xacro:macro>
+
+    <!-- Macro koleso -->
+    <xacro:macro name="wheel" params="prefix radius length joint_xyz">
+        <link name="wheel_${prefix}_link">
+            <xacro:default_inertial mass="1"/>
+            <visual>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <cylinder radius="${radius}" length="${length}"/>
+                </geometry>
+                <material name="Blue"/>
+            </visual>
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <geometry>
+                    <cylinder radius="${radius}" length="${length}"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="wheel_${prefix}_to_base_joint" type="continuous">
+            <origin xyz="${joint_xyz}" rpy="${pi / 2} 0.0 0.0"/>
+            <parent link="base_link"/>
+            <child link="wheel_${prefix}_link"/>
+            <axis xyz="0 0 1"/>
+        </joint>
+
+        <transmission name="${prefix}_wheel_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="${prefix}_wheel_motor">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+
+            <joint name="wheel_${prefix}_to_base_joint">
+                <hardwareInterface>VelocityJointInterface</hardwareInterface>
+            </joint>
+        </transmission>
+
+        <gazebo reference="${prefix}_wheel">
+            <mu1 value="200.0"/>
+            <mu2 value="100.0"/>
+            <kp value="10000000.0" />
+            <kd value="1.0" />
+            <material>Gazebo/Grey</material>
+        </gazebo>
+    </xacro:macro>
+
+
+    <!--  -->
+    <xacro:box_link 
+        size_x="0.47" size_y="0.315" size_z="0.168"
+        mass="10"
+        name="base_link"
+        material_name="Blue" />
+
+    <xacro:wheel
+        prefix="left_front"
+        radius="0.115"
+        length="0.065"
+        joint_xyz="0.145 0.20 -0.01"/>
+
+    <xacro:wheel
+        prefix="left_back"
+        radius="0.115"
+        length="0.065"
+        joint_xyz="-0.145 0.20 -0.01"/>
+
+    <xacro:wheel
+        prefix="right_front"
+        radius="0.115"
+        length="0.065"
+        joint_xyz="0.145 -0.20 -0.01"/>
+
+    <xacro:wheel
+        prefix="right_back"
+        radius="0.115"
+        length="0.065"
+        joint_xyz="-0.145 -0.20 -0.01"/>
+
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/</robotNamespace>
+        </plugin>
+    </gazebo>
+
+    <!--Laser Scan-->
+  <link name="sensor_laser">
+    <visual>
+      <geometry>
+        <mesh filename="package://mrvk_description/meshes/hokuyo.dae"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="${laser_size_x} ${laser_size_y} ${laser_size_z}"/>
+      </geometry>
+    </collision>
+    <xacro:default_inertial mass="0.02"/>
+  </link>
+
+  <joint name="sensor_laser_joint" type="fixed">
+    <origin xyz="${laser_origin_x} ${laser_origin_y} ${laser_origin_z}" rpy="0 0 0" />
+    <parent link="base_link"/>
+    <child link="sensor_laser" />
+  </joint>
+</robot>
