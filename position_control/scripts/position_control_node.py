@@ -64,6 +64,7 @@ class Controller(object):
         y = data.pose.pose.position.y
         ang = euler_from_quaternion([data.pose.pose.orientation.x, data.pose.pose.orientation.y, data.pose.pose.orientation.z, data.pose.pose.orientation.w])
 
+        print(ang)
         rospy.loginfo('x: {}, y: {}, ang: {}'.format(x, y, ang))
 
         self.actuating_signal(x, y, ang[2])
@@ -71,10 +72,12 @@ class Controller(object):
         msg = Twist()
         msg.linear.x = self.v
         msg.angular.z = self.w
-        self.pub.publish(msg)
+        #self.pub.publish(msg)
+
+
 
 def main():
-    ref = (10.0, 10.0)
+    ref = (0, 0)
 
     rospy.init_node('position_control')
     pup = rospy.Publisher('/mrvk_diff_drive_controller/cmd_vel', Twist, queue_size = 10)

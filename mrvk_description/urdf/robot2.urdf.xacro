@@ -11,6 +11,8 @@
     <xacro:property name="laser_origin_y" value="0"/>
     <xacro:property name="laser_origin_z" value="0.12"/>
 
+     <xacro:property name="camera_link" value="0.05" /> 
+
 
     <xacro:macro name="default_inertial" params="mass">
         <inertial>
@@ -86,7 +88,7 @@
             <material>Gazebo/Grey</material>
         </gazebo>
     </xacro:macro>
-
+    
 
     <!--  -->
     <xacro:box_link 
@@ -146,4 +148,37 @@
     <parent link="base_link"/>
     <child link="sensor_laser" />
   </joint>
+
+  <!-- Camera -->
+  <link name="camera">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+
+    <inertial>
+      <mass value="1e-5" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0.3 0 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera"/>
+  </joint>
+
+  
 </robot>
