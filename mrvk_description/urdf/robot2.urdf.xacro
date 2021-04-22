@@ -76,7 +76,7 @@
             </actuator>
 
             <joint name="wheel_${prefix}_to_base_joint">
-                <hardwareInterface>VelocityJointInterface</hardwareInterface>
+                <hardwareInterface>VelocityJointInterface</hardwareInterface>''
             </joint>
         </transmission>
 
