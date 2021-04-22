@@ -39,14 +39,14 @@
                     <box size="${size_x} ${size_y} ${size_z}"/>
                 </geometry>
             </collision>
-            <xacro:default_inertial mass="10" />
+            <xacro:default_inertial mass= "${mass}"/>
         </link>
     </xacro:macro>
 
     <!-- Macro koleso -->
-    <xacro:macro name="wheel" params="prefix radius length joint_xyz">
+    <xacro:macro name="wheel" params="prefix radius length joint_xyz mass">
         <link name="wheel_${prefix}_link">
-            <xacro:default_inertial mass="1"/>
+            <xacro:default_inertial mass="${mass}"/>
             <visual>
                 <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
                 <geometry>
@@ -66,7 +66,7 @@
             <origin xyz="${joint_xyz}" rpy="${pi / 2} 0.0 0.0"/>
             <parent link="base_link"/>
             <child link="wheel_${prefix}_link"/>
-            <axis xyz="0 0 1"/>
+            <axis xyz="0 0 -1"/>
         </joint>
 
         <transmission name="${prefix}_wheel_trans">
@@ -83,7 +83,7 @@
         <gazebo reference="${prefix}_wheel">
             <mu1 value="200.0"/>
             <mu2 value="100.0"/>
-            <kp value="10000000.0" />
+            <kp value="100000.0" />
             <kd value="1.0" />
             <material>Gazebo/Grey</material>
         </gazebo>
@@ -92,34 +92,38 @@
 
     <!--  -->
     <xacro:box_link 
-        size_x="0.47" size_y="0.315" size_z="0.168"
-        mass="10"
         name="base_link"
-        material_name="Blue" />
+        size_x="0.47" size_y="0.315" size_z="0.168"
+        mass="30"        
+        material_name="Blue"/>
 
     <xacro:wheel
         prefix="left_front"
         radius="0.115"
         length="0.065"
-        joint_xyz="0.145 0.20 -0.01"/>
+        joint_xyz="0.145 0.20 -0.01"
+        mass = "0.5"/>        
 
     <xacro:wheel
         prefix="left_back"
         radius="0.115"
         length="0.065"
-        joint_xyz="-0.145 0.20 -0.01"/>
+        joint_xyz="-0.145 0.20 -0.01"
+        mass = "0.5"/>
 
     <xacro:wheel
         prefix="right_front"
         radius="0.115"
         length="0.065"
-        joint_xyz="0.145 -0.20 -0.01"/>
+        joint_xyz="0.145 -0.20 -0.01"
+        mass = "0.5"/>
 
     <xacro:wheel
         prefix="right_back"
         radius="0.115"
         length="0.065"
-        joint_xyz="-0.145 -0.20 -0.01"/>
+        joint_xyz="-0.145 -0.20 -0.01"
+        mass = "0.5"/>
 
     <!--gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
@@ -138,7 +142,7 @@
         <wheelSeparation>0.48</wheelSeparation>
         <wheelDiameter>0.23</wheelDiameter>
         <robotBaseFrame>base_link</robotBaseFrame>
-        <torque>100</torque>
+        <torque>5</torque>
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
