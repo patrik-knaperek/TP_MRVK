@@ -1,20 +1,18 @@
-type: "diff_drive_controller/DiffDriveController"
 publish_rate: 50
 
-left_wheel: ['wheel_left_front_to_base_joint', 'wheel_left_back_to_base_joint']
-right_wheel: ['wheel_right_front_to_base_joint', 'wheel_right_back_to_base_joint']
+leftFrontJoint: 'wheel_left_front_to_base_joint'
+rightFrontJoint: 'wheel_right_front_to_base_joint'
+leftRearJoint: 'wheel_left_back_to_base_joint'
+rightRearJoint: 'wheel_right_back_to_base_joint'
 
+wheelSeparation: 0.48
+wheelDiameter: 0.23
 
-pose_covariance_diagonal : [0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001]
-twist_covariance_diagonal: [0.00001, 0.00001, 0.00001, 0.00001, 0.00001, 0.00001]
+commandTopic: 'cmd_vel'
+odometryTopic: 'odom'
+odometryFrame: 'map'
 
 base_frame_id: base_link
-
-wheel_separation_multiplier: 1.25 # husky 1.875 - Will need to adjust based on odom readings
-wheel_radius_multiplier    : 1
-
-enable_odom_tf: false
-estimate_velocity_from_position: false
 
 linear:
   x:

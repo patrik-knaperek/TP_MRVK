@@ -82,7 +82,7 @@ def main():
     rospy.init_node('position_control')
     pup = rospy.Publisher('/mrvk_diff_drive_controller/cmd_vel', Twist, queue_size = 10)
     controller = Controller(pup, 1, 1, ref)
-    rospy.Subscriber("/mrvk_diff_drive_controller/odom", Odometry, controller.odometry_callback)
+    rospy.Subscriber("/odom", Odometry, controller.odometry_callback)
     rospy.spin()
 
 if __name__ == '__main__':

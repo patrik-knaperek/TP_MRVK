@@ -121,13 +121,37 @@
         length="0.065"
         joint_xyz="-0.145 -0.20 -0.01"/>
 
-    <gazebo>
+    <!--gazebo>
         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-            <robotNamespace>/</robotNamespace>
         </plugin>
+    </gazebo-->
+
+    <gazebo>
+      <plugin filename="libgazebo_ros_skid_steer_drive.so" name="skid_steer_drive_controller">
+        <updateRate>50</updateRate>
+        <alwaysOn>1</alwaysOn>
+        <robotNamespace>test_robot</robotNamespace>
+        <leftFrontJoint>wheel_left_front_to_base_joint</leftFrontJoint>
+        <rightFrontJoint>wheel_right_front_to_base_joint</rightFrontJoint>
+        <leftRearJoint>wheel_left_back_to_base_joint</leftRearJoint>
+        <rightRearJoint>wheel_right_back_to_base_joint</rightRearJoint>
+        <wheelSeparation>0.48</wheelSeparation>
+        <wheelDiameter>0.23</wheelDiameter>
+        <robotBaseFrame>base_link</robotBaseFrame>
+        <torque>100</torque>
+        <commandTopic>cmd_vel</commandTopic>
+        <odometryTopic>odom</odometryTopic>
+        <odometryFrame>odom</odometryFrame>
+        <broadcastTF>true</broadcastTF>
+      </plugin>
     </gazebo>
 
-    <!--Laser Scan-->
+  <!-- Moj pokus o plugin -->
+  <!--gazebo>
+    <plugin name="gazebo_tutorials" filename="libgazebo_tutorials.so"/>
+  </gazebo-->
+
+  <!--Laser Scan-->
   <link name="sensor_laser">
     <visual>
       <geometry>
