@@ -66,7 +66,7 @@
             <origin xyz="${joint_xyz}" rpy="${pi / 2} 0.0 0.0"/>
             <parent link="base_link"/>
             <child link="wheel_${prefix}_link"/>
-            <axis xyz="0 0 -1"/>
+            <axis xyz="0 0 -1"/>  
         </joint>
 
         <transmission name="${prefix}_wheel_trans">
@@ -142,11 +142,21 @@
         <wheelSeparation>0.48</wheelSeparation>
         <wheelDiameter>0.23</wheelDiameter>
         <robotBaseFrame>base_link</robotBaseFrame>
+        <wheel_accel>1.8</wheel_accel>
         <torque>5</torque>
         <commandTopic>cmd_vel</commandTopic>
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
         <broadcastTF>true</broadcastTF>
+
+        <alpha1>0.000</alpha1>
+        <alpha2>0.00000</alpha2>
+        <alpha3>0.00000</alpha3>
+        <alpha4>0.000</alpha4>
+
+        <covariance_x>0.0000</covariance_x>
+        <covariance_y>0.0000</covariance_y>
+        <covariance_yaw>0.0000</covariance_yaw>
       </plugin>
     </gazebo>
 
