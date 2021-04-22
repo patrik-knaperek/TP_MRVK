@@ -32,6 +32,7 @@
     <rosparam file="$(find mrvk_gazebo)/cost_map/local_costmap.yaml" command="load" />
     <rosparam file="$(find mrvk_gazebo)/cost_map/global_costmap.yaml" command="load" /> 
     <rosparam file="$(find mrvk_gazebo)/cost_map/base_local_planner.yaml" command="load" />
+    <remap from="/cmd_vel" to="/test_robot/cmd_vel" />
  </node>
 
 </launch>
