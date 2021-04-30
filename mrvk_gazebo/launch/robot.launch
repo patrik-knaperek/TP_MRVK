@@ -1,14 +1,9 @@
 <launch>
   <arg name="model" default="$(find mrvk_description)/urdf/robot2.urdf.xacro"/>
-<<<<<<< HEAD
-  <arg name="world_file" default="$(find mrvk_gazebo)/worlds/empty.world"/>
-  <!--arg name="world_file" default="$(find mrvk_gazebo)/worlds/example.world"/-->
+    <!--arg name="world_file" default="$(find mrvk_gazebo)/worlds/empty.world"/-->
+  <arg name="world_file" default="$(find mrvk_gazebo)/worlds/example.world"/>
+
   <!--arg name="world_file" default="$(find mrvk_gazebo)/worlds/baylands.world"/-->
-=======
-  <!--arg name="world_file" default="$(find mrvk_gazebo)/worlds/empty.world"/-->
-  <!--arg name="world_file" default="$(find mrvk_gazebo)/worlds/example.world"/-->
-  <arg name="world_file" default="$(find mrvk_gazebo)/worlds/baylands.world"/>
->>>>>>> ccd6fd51fe36ff1609bd0ee58b90c4e48ad66764
 
   <include file="$(find mrvk_gazebo)/launch/gazebo.launch">
     <arg name="model" value="$(arg model)" />
