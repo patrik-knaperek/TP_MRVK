@@ -6,130 +6,306 @@ import cv2
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
 
-
-
 class PathDetector:
     def __init__(self, pub):
         self.pub = pub
         self.initialized = 0
-        self.center = []
-        self.wp = 0
 
-    def getPathColor(self, img): 
-        #filtrate image
-        imgFil = cv2.medianBlur(img, 3)
+        self.thresh_lower_hsv = []  # lower [H,S,V] boundaries of accepted pathway color
+        self.thresh_upper_hsv = []  # upper [H,S,V] boundaries of accepted pathway color
 
-        #extract part of the image in the close area of camera
-        [sizeY, sizeX, sizeColor] =  imgFil.shape
-        centerImg = imgFil[ (sizeY - int(sizeY/9)) : sizeY , int(sizeX/2 - sizeX/4.5) : int(sizeX/2 + sizeX/4.5), :]
+        # parameters for tuning
+        self.K = 5  # number of dominant colors to extract in initialization
+        self.offset_lower = [15, 25, 15]  # [H,S,V] negative offset
+        self.offset_upper = [15, 25, 15]  # [H,S,V] positive offset
+        self.field_of_vision = None
+        self.controller = self.Controller(pub)
+    
+    class FieldOfVision:
+        def __init__(self, shape, lower_width, upper_width, height, x0=0.0, y0=0.0, type='Origin'):
+            if (type == 'Centralized'):
+                x0 = (shape[1] - lower_width)/2.0 - 0.5*(1.0 + shape[1] % 2)
+            
+            self.mask = self.create_field_of_vision_mask(
+                shape, 
+                lower_width, upper_width, height, 
+                x0, y0
+            )
+            self.control_zone = self.create_control_zone(shape, upper_width, height)
 
-        # convert BGR colorspace of proccesed image to HSV
-        hsv = cv2.cvtColor(imgFil, cv2.COLOR_BGR2HSV)
+            _, thresh = cv2.threshold(self.mask, 0, 255, 0)
+            _, self.contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        #convert img array from uint8t [y,x,3] to float32t [y*x,3]
+            self.shape = shape
+            self.lower_width = lower_width
+            self.upper_width = upper_width
+            self.height = height
+
+            self.x0 = x0
+            self.y0 = y0
+
+            self.type = type
+        
+        def create_field_of_vision_mask(self, shape, lower_width, upper_width, height, x0, y0):
+            sign = lambda u: (2.0*(u > 0) + 1.0*(u == 0) - 1.0)
+            y = lambda x, x0, y0, k : (k*(x - x0) + y0)
+
+            ROWS = shape[0]
+            COLS = shape[1]
+            mask = numpy.zeros(shape, dtype='uint8')
+
+            x01 = lower_width + x0
+            x02 = x0
+            y0 = ROWS - 1 - y0
+
+            width = lower_width - upper_width
+            sgn = sign(width)
+
+            if (sgn == 0):
+                for j in range(ROWS):
+                    for i in range(COLS):
+                        mask[j][i] = ((i <= x01) and (i >= x02) and (j >= y0 - height) and (j <= y0))
+                
+                return mask
+
+            k1 = 2.0*height/width
+            k2 = -2.0*height/width
+
+            for j in range(ROWS):
+                for i in range(COLS):
+                    mask[j][i] = ((sgn*(j - y(i, x01, y0, k1)) >= 0) and (sgn*(j - y(i, x02, y0, k2)) >= 0) and (j >= y0 - height) and (j <= y0))
+            
+            return mask
+
+        def create_control_zone(self, shape, upper_width, height):
+            return numpy.array([shape[0] - 1.0*height, 
+                                shape[0] - 0.7*height,
+                                shape[1]/2 - 0.25*upper_width, 
+                                shape[1]/2 + 0.25*upper_width], dtype='uint64')
+
+    class Controller:
+        def __init__(self, pub):
+            self.pub = pub
+            self.v = 0.0
+            self.w = 0.0
+            self.passability = 0.0
+            self.thresh_MODE0to1 = 0.2 # at least 20 percent of the checked rectangle has to be detected sidewalk
+            self.thresh_MODE1to0 = 0.6 # switch to MODE 1 when the checked rectangle consists of at least 80% detected sidewalk
+            self.currMODE = 0
+        
+        def calcActuatingSig(self, x, y):
+            def saturation(u, lower_limit, upper_limit):
+                return (max(lower_limit, min(u, upper_limit)))
+
+            def rate_limiter(y, u, falling_slew_rate, rising_slew_rate):
+                rate = u - y
+
+                if (rate < falling_slew_rate):
+                    return y + falling_slew_rate
+                
+                if (rate > rising_slew_rate):
+                    return y + rising_slew_rate
+
+                return u
+            
+            dx = x[-3] - x[0]
+            dy = -y[-3] + y[0]
+            ang = math.atan2(dy, dx)   
+            
+            # switch mode logic
+            if(self.passability <= self.thresh_MODE0to1):
+                self.currMODE = 1
+            
+            if((self.currMODE == 1) and (self.passability >= self.thresh_MODE1to0)):
+                self.currMODE = 0
+
+
+            # MODE 0 - go forward while staying in the center of the sidewalk
+            if (self.currMODE == 0):
+                v = 3*self.passability
+                v = saturation(v, -1, 1)
+                v = rate_limiter(self.v, v, -0.1, 0.1)
+
+                w = -math.pi/2 + ang
+                w = saturation(w, -0.5, 0.5)
+                w = rate_limiter(self.w, w, -0.1, 0.1)
+
+            # MODE 1 - rotate until the new clear path is detected
+            else:
+                v = 0.0
+                v = rate_limiter(self.v, v, -0.1, 0.1)
+
+                w = -0.5
+                w = rate_limiter(self.w, w, -0.1, 0.1)
+            
+            self.v = v
+            self.w = w
+
+            msg = Twist()
+            msg.linear.x = v
+            msg.angular.z = w
+            self.pub.publish(msg)
+
+        
+    def initialize(self, img):
+        # Create field of vision mask for find_path_center
+        if (self.field_of_vision is None):
+            shape = img.shape[0:2]
+            lower_width = shape[1]*3.0
+            upper_width = shape[1]/2.0
+            height = shape[0]/2.0
+
+            self.field_of_vision = self.FieldOfVision(shape, lower_width, upper_width, height, type='Centralized')
+
+        # extract part of the image in the close area of camera
+        [sizeY, sizeX, sizeColor] =  img.shape
+        centerImg = img[ (sizeY - int(sizeY/9)) : sizeY , int(sizeX/2 - sizeX/4.5) : int(sizeX/2 + sizeX/4.5), :]
+
+        # convert img array from uint8t [y,x,3] to float32t [y*x,3]
         height, width, _ = centerImg.shape
-        centerIm = numpy.float32(centerImg.reshape(height * width,3))
+        centerIm = numpy.float32(centerImg.reshape(height * width, 3))
 
-        #find K dominant colors of the extracted area, to determine the color of the pathway
-        compactness,labels,center = cv2.kmeans(K=10,
-                                            flags = cv2.KMEANS_RANDOM_CENTERS,
-                                            attempts=10,
-                                            bestLabels=None,
-                                            data=centerIm,
-                                            criteria= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 3, 1.0))
+        # find K dominant colors of the extracted area, to determine the color of the pathway
+        compactness, labels, centers = cv2.kmeans(K=self.K,
+                                                  flags = cv2.KMEANS_RANDOM_CENTERS,
+                                                  attempts=1,
+                                                  bestLabels=None,
+                                                  data=centerIm,
+                                                  criteria= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 3, 1.0))
 
 
-        #convert dominant colors array from float32 [K,3] to uint8t [K,3]
-        self.center = numpy.uint8(center)
-        
+        # convert dominant colors array from float32 [K,3] to uint8t [K,3]
+        dom_col_rgb = numpy.uint8(centers)
+
+        # [K,3] matrix of K dominant colors in HSV
+        dom_col_hsv = numpy.empty([numpy.size(dom_col_rgb, 0), numpy.size(dom_col_rgb, 1)])
+
+        # [K,3] matrix of accepted lower color boundaries in HSV
+        self.thresh_lower_hsv = numpy.empty([numpy.size(dom_col_rgb, 0), numpy.size(dom_col_rgb, 1)])
+
+        # [K,3] matrix of accepted upper color boundaries in HSV
+        self.thresh_upper_hsv = numpy.empty([numpy.size(dom_col_rgb, 0), numpy.size(dom_col_rgb, 1)])
+
+        for i in range(numpy.size(dom_col_rgb, 0)):
+            # convert color space of corresponding dominant color from BGR to HSV
+            dom_col_hsv[i, :] = cv2.cvtColor(numpy.array([[dom_col_rgb[i, :]]]), cv2.COLOR_BGR2HSV).flatten()
+            self.thresh_lower_hsv[i, :] = numpy.clip(numpy.subtract(dom_col_hsv[i, :], self.offset_lower), 0, 255)
+            self.thresh_upper_hsv[i, :] = numpy.clip(numpy.add(dom_col_hsv[i, :], self.offset_upper), 0, 255)
+
     def detectPath(self, img):
+        mask_comb = self.create_mask(img)
+        img = self.find_path_center(img, mask_comb)
+        return img, mask_comb
+
+    def create_mask(self, img):
+        # convert BGR img to HSV
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        hsv_center = numpy.empty([numpy.size(self.center,0), numpy.size(self.center,1)]) # [K,3] matrix of K dominant colors in HSV
-        mask_array = [] #array of K masks, one for each dominant color
-        offset_lower = [15, 10, 20] # [H,S,V] negative offset
-        offset_upper = [15, 10, 20] # [H,S,V] positive offset
-        for i in range(numpy.size(self.center,0)):
-            hsv_center[i,:] = cv2.cvtColor(numpy.array([[self.center[i,:]]]), cv2.COLOR_BGR2HSV).flatten() #convert color space of corresponding dominant color from BGR to HSV
-            thresh_lower = numpy.subtract(hsv_center[i,:],offset_lower) #lower [H,S,V] boundary of accepted pathway color
-            thresh_upper = numpy.add(hsv_center[i,:], offset_upper) #upper [H,S,V] boundary of accepted pathway color
-            mask_array.append(cv2.inRange(hsv, thresh_lower, thresh_upper)) #create mask based on accepted color range of corresponding dominant color
-        
-        #create combined mask from K masks
+
+        mask_array = []  # array of K masks, one for each dominant color
+
+        for i in range(numpy.size(self.thresh_lower_hsv, 0)):
+            # create mask based on accepted color range of corresponding dominant color
+            mask_array.append(cv2.inRange(hsv, self.thresh_lower_hsv[i, :], self.thresh_upper_hsv[i, :]))
+
+        # create combined mask from K masks
         mask_comb = mask_array[0]
-        for i in range(1,numpy.size(self.center,0)):
-            mask_comb = cv2.bitwise_or(mask_comb,mask_array[i])
+        for i in range(1, numpy.size(self.thresh_lower_hsv, 0)):
+            mask_comb = cv2.bitwise_or(mask_comb, mask_array[i])        
+        
+        kernel = numpy.ones((7, 7), numpy.uint8)
+        mask_comb = cv2.morphologyEx(mask_comb, cv2.MORPH_CLOSE, kernel)
 
-        #filtrate created mask
-        mask_filter = cv2.medianBlur(mask_comb,5)
-        mask_filter2 = cv2.medianBlur(mask_filter, 19)
+        mask_comb = mask_comb*self.field_of_vision.mask
+        return mask_comb
+    
+    def check_passability(self, arr):
+        return (arr.sum()/arr.size)
 
-        #find pathway border
-        #contours, hierarchy = cv2.findContours(mask_filter2, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-        #img = cv2.drawContours(img, contours, -1, (0,255,0), 3)
+    def find_path_center(self, img, mask_comb):
+        def sum(N):
+            s = 0
+            for n in range(N):
+                s = s + 1.0/(n + 1.0)
+            return s
 
-        #calculate centre of the sidewalk
+        saturation = lambda u, lower, upper : min(upper, max(lower, u))
+        
+        # calculate centre of the sidewalk
         ROWS = img.shape[0]
         COLS = img.shape[1]
-        N = 3
-        dN = int(ROWS/(2*N))
-        cX = numpy.zeros(N + 1, dtype=int)
-        cY = numpy.zeros(N + 1, dtype=int)
         
-        cX[0] = int(COLS/2)
-        cY[0] = ROWS
+        x0 = self.field_of_vision.x0
+        y0 = self.field_of_vision.y0
+        height = self.field_of_vision.height
+        
+        N = 5
+        dN = int(height/N)
+        
+        x = numpy.zeros(N + 1, dtype=int)
+        y = numpy.zeros(N + 1, dtype=int)
+
+        x[0] = int(COLS / 2)
+        y[0] = ROWS
+
+        k = sum(N)
+        yn = saturation(y[0] - y0, 0, ROWS)
+        dyn = int(k*dN)
         
         for n in range(N):
-            M = cv2.moments(mask_comb[ROWS - (n + 1)*dN:ROWS - n*dN, :])
-            cX[n + 1] = int(M["m10"] / M["m00"])
-            cY[n + 1] = int(M["m01"] / M["m00"]) + ROWS - (n + 1)*dN
-        
+            M = cv2.moments(mask_comb[yn - dyn : yn - int((not n)*dyn/2.0), :])
+            yn = yn - dyn
+            k = k - 1.0/(n + 1.0)
+            dyn = int(k*dN)
+            
+            if (M["m00"] == 0):
+                x[n + 1] = x[n]
+                y[n + 1] = y[n]
+            else:
+                x[n + 1] = int(M["m10"] / M["m00"])
+                y[n + 1] = int(M["m01"] / M["m00"]) + yn
+
         for n in range(N):
-            cv2.line(img, (cX[n], cY[n]), (cX[n + 1], cY[n + 1]), (0, 255, 0), 5) 
+            cv2.line(img, (x[n], y[n]), (x[n + 1], y[n + 1]), (0, 255, 0), 5)
+        
+        idx = self.field_of_vision.control_zone
+        self.controller.passability = self.check_passability(1.0/255.0*mask_comb[idx[0] : idx[1], idx[2] : idx[3]])
 
-        self.calcActuatingSig(cX, cY)
-        return img, mask_comb
-        # #show processed image
-        # cv2.imshow('img', img)
-        # cv2.imshow('mask_comb', mask_comb)
-        # cv2.imshow('mask_f2', mask_filter2)
+        cv2.rectangle(img, 
+                     (idx[2], idx[0]),
+                     (idx[3], idx[1]),
+                      color=(255, 0, 0), thickness=5)
 
-        # #wait needed to avoid instant program termination
-        # cv2.waitKey(0)
-    
-    def calcActuatingSig(self, cX, cY):
-        dx = cX[-1] - cX[0]
-        dy = cY[-1] - cY[0]
-        ang = math.atan2(dy, dx)        
-        v = 0.5
-        w = math.pi/2 + ang
-        self.wp = w
-        msg = Twist()
-        msg.linear.x = v
-        msg.angular.z = w
-        self.pub.publish(msg)
+        self.controller.calcActuatingSig(x, y)
 
-    def camera_callback(self,img):
-        # transform data from camera to img
-        frame = numpy.fromstring(img.data, numpy.uint8)
-        frame = frame.reshape(img.height, img.width, 3)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        return img
 
-        # on first call initialize mask based on dominant colors
+    def process_img(self, frame):
+        # transform data from camera to img        
+        img = numpy.fromstring(frame.data, numpy.uint8)
+        img = img.reshape(frame.height, frame.width, 3)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+        # filtrate image
+        img = cv2.GaussianBlur(img, (3, 3), 0)
+
+        # on first call initialize dominant colors
         if self.initialized == 0:
-            self.getPathColor(frame)
+            self.initialize(img)
+        self.initialized = 1
 
         # show img with detected path and mask
-        imgDet, mask_comb = self.detectPath(frame)
+        imgDet, mask_comb = self.detectPath(img)
+        cv2.drawContours(imgDet, self.field_of_vision.contours, -1, (0, 0, 255), 3)
+
         cv2.imshow("mask", mask_comb)
         cv2.imshow("path", imgDet)
         cv2.waitKey(1)
-        initialized = 1
 
 def main():
     rospy.init_node('path_detection')
-    pub = rospy.Publisher('/mrvk_diff_drive_controller/cmd_vel', Twist, queue_size = 10)
-    pathDet = PathDetector(pub)    
-    rospy.Subscriber("/camera/image_raw", Image, pathDet.camera_callback)    
+    pub = rospy.Publisher('/test_robot/cmd_vel', Twist, queue_size = 10)
+    pathDet = PathDetector(pub)
+    rospy.Subscriber("/camera/image_raw", Image, pathDet.process_img)
     rospy.spin()
 
 if __name__ == '__main__':
