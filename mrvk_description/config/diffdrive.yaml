@@ -1,9 +1,11 @@
 publish_rate: 50
 
 leftFrontJoint: 'wheel_left_front_to_base_joint'
+leftRearJoint: 'wheel_left_rear_to_base_joint'
 rightFrontJoint: 'wheel_right_front_to_base_joint'
-leftRearJoint: 'wheel_left_back_to_base_joint'
-rightRearJoint: 'wheel_right_back_to_base_joint'
+rightRearJoint: 'wheel_right_rear_to_base_joint'
+
+cmd_vel_timeout: 0.25
 
 wheelSeparation: 0.48
 wheelDiameter: 0.23
@@ -17,12 +19,12 @@ base_frame_id: base_link
 linear:
   x:
     has_velocity_limits    : true
-    max_velocity           : 0.55   # m/s
+    max_velocity           : 1.0   # m/s
     has_acceleration_limits: true
-    max_acceleration       : 0.25   # m/s^2
+    max_acceleration       : 1.0   # m/s^2
 angular:
   z:
     has_velocity_limits    : true
-    max_velocity           : 1  # rad/s
+    max_velocity           : 8.0  # rad/s
     has_acceleration_limits: true
-    max_acceleration       : 2.0   # rad/s^2
+    max_acceleration       : 8.0   # rad/s^2
