@@ -5,7 +5,7 @@
         <plugin filename="libgazebo_ros_skid_steer_drive.so" name="skid_steer_drive_controller">
             <updateRate>50</updateRate>
             <alwaysOn>1</alwaysOn>
-            <robotNamespace>test_robot</robotNamespace>
+            <robotNamespace>shoddy</robotNamespace>
             <leftFrontJoint>wheel_left_front_to_base_joint</leftFrontJoint>
             <leftRearJoint>wheel_left_rear_to_base_joint</leftRearJoint>
             <rightFrontJoint>wheel_right_front_to_base_joint</rightFrontJoint>
@@ -31,7 +31,7 @@
         </plugin>
     </gazebo>
 
-    <!-- Hokuyo UTM-30LX Laser Range Finder-->
+    <!-- Hokuyo URG-04LX Laser Range Finder-->
     <gazebo reference="sensor_laser_link">
         <sensor type="gpu_ray" name="head_hokuyo_sensor">
             <pose>0 0 0 0 0 0</pose>
@@ -39,9 +39,9 @@
             <update_rate>60</update_rate>
             <ray>
                 <scan>
-                    <horizontal>
-                        <samples>720</samples>
-                        <!--resolution>0.5</resolution-->
+                    <horizontal> -->                        
+                        <!-- <resolution>0.36</resolution>                         -->
+                        <samples>1000</samples>
                         <min_angle>-3.14159</min_angle>
                         <max_angle>3.14159</max_angle>
                     </horizontal>

@@ -1,31 +1,66 @@
 <?xml version="1.0"?>
 <robot name="shoddy" xmlns:xacro="http://wiki.ros.org/xacro">
     <xacro:macro name="base_macro" params="name">
-        <!-- Properties -->
+        <!-- Properties ==================================================== -->
+        <!-- Bumper -->
+        <xacro:property name="holder_size_x" value="0.03"/>
+        <xacro:property name="holder_size_y" value="0.01"/>
+        <xacro:property name="holder_size_z" value="0.02"/>
+
+        <xacro:property name="holder_front_left_xyz" value="${base_size_x/2 + holder_size_x/2} ${-base_size_y/2*0.8} 0.0"/>
+        <xacro:property name="holder_front_right_xyz" value="${base_size_x/2 + holder_size_x/2} ${base_size_y/2*0.8} 0.0"/>
+        <xacro:property name="holder_rear_left_xyz" value="${-base_size_x/2 - holder_size_x/2} ${-base_size_y/2*0.8} 0.0"/>
+        <xacro:property name="holder_rear_right_xyz" value="${-base_size_x/2 - holder_size_x/2} ${base_size_y/2*0.8} 0.0"/>
+
+        <xacro:property name="bumper_radius" value="0.01"/>
+        <xacro:property name="bumper_length" value="0.4"/>
+
+        <xacro:property name="bumper_front_xyz" value="${base_size_x/2 + holder_size_x} 0.0 0.0"/>
+        <xacro:property name="bumper_rear_xyz" value="${-base_size_x/2 - holder_size_x} 0.0 0.0"/>
+
+        <xacro:property name="bumper_material" value="Grey"/>
+        <!-- Bumper -->
+
+        <!-- Accessory -->
+        <xacro:property name="accessory_front_radius" value="0.01"/>
+        <xacro:property name="accessory_front_length" value="0.005"/>
+        <xacro:property name="accessory_rear_radius" value="0.005"/>
+        <xacro:property name="accessory_rear_length" value="0.01"/>
+
+        <xacro:property name="accessory_left_front_xyz" value="${base_size_x/2 + accessory_front_length/2 + accessory_rear_length} ${-base_size_y/2*0.65} -0.03"/>
+        <xacro:property name="accessory_left_rear_xyz" value="${base_size_x/2 + accessory_rear_length/2} ${-base_size_y/2*0.65} -0.03"/>
+        <xacro:property name="accessory_right_front_xyz" value="${base_size_x/2 + accessory_front_length/2 + accessory_rear_length} ${base_size_y/2*0.65} -0.03"/>
+        <xacro:property name="accessory_right_rear_xyz" value="${base_size_x/2 + accessory_rear_length/2} ${base_size_y/2*0.65} -0.03"/>
+
+        <xacro:property name="accessory_material" value="Grey"/> 
+        <!-- Accessory -->
+
         <!-- Shaft -->
         <xacro:property name="shaft_radius" value="0.015"/>
         <xacro:property name="shaft_length" value="0.38"/>
 
-        <xacro:property name="shaft_front_origin" value="0.145 0.0 -0.02"/>
-        <xacro:property name="shaft_rear_origin" value="-0.145 0.0 -0.02"/>
+        <xacro:property name="shaft_front_xyz" value="0.145 0.0 -0.05"/>
+        <xacro:property name="shaft_rear_xyz" value="-0.145 0.0 -0.05"/>
 
         <xacro:property name="shaft_material" value="Grey"/> 
-
-        <!-- base -->
-        <xacro:property name="size_x" value="0.47"/>
-        <xacro:property name="size_y" value="0.315"/>
-        <xacro:property name="size_z" value="0.168"/>
-
-        <xacro:property name="mass" value="30"/>
-        
-        <xacro:property name="base_material" value="Blue"/>   
-
-
-
-        <!-- Links -->
         <!-- Shaft -->
-        <xacro:macro name="shaft_macro" params="name origin parent">
-            <link name="${name}">
+
+        <!-- Base -->
+        <xacro:property name="base_size_x" value="0.47"/>
+        <xacro:property name="base_size_y" value="0.315"/>
+        <xacro:property name="base_size_z" value="0.168"/>
+
+        <xacro:property name="base_mass" value="30"/>
+        
+        <xacro:property name="base_material" value="Blue"/>
+        <!-- Base -->
+        <!-- ==================================================== Properties -->
+
+
+        <!-- Macros ======================================================== -->
+        <!-- Shaft -->
+        <xacro:macro name="shaft_macro" params="name xyz parent">
+            <link name="${name}_link">
                 <visual>
                     <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
                     <geometry>
@@ -43,47 +78,228 @@
             </link>
 
             <joint name="${name}_joint" type="fixed">
-                <origin xyz="${origin}" rpy="0.0 0.0 0.0"/>
+                <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
                 <parent link="${parent}"/>
-                <child link="${name}"/>
+                <child link="${name}_link"/>
             </joint>
 
-            <gazebo reference="${name}">
+            <gazebo reference="${name}_link">
                 <material>Gazebo/Grey</material>
             </gazebo>
         </xacro:macro>
+        <!-- Shaft -->
+
+
+
+        <!-- Bumper -->
+        <!-- Holder -->
+        <xacro:macro name="holder_macro" params="name xyz parent">
+            <link name="${name}_link">
+                <visual>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                    <geometry>
+                        <box size="${holder_size_x} ${holder_size_y} ${holder_size_z}"/>
+                    </geometry>
+                    <material name="${bumper_material}"/>
+                </visual>
+
+                <collision>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                    <geometry>
+                        <box size="${holder_size_x} ${holder_size_y} ${holder_size_z}"/>
+                    </geometry>
+                </collision>
+
+                <inertial>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                    <mass value="0.0"/>
+                    <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+                </inertial>
+            </link>
+            
+            <joint name="${name}_joint" type="fixed">
+                <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
+                <parent link="${parent}"/>
+                <child link="${name}_link"/>
+            </joint>
+
+            <gazebo reference="${name}_link">
+                <material>Gazebo/Grey</material>
+            </gazebo>
+        </xacro:macro>
+        <!-- Holder -->
+    
+        <!-- Rod -->
+        <xacro:macro name="bumper_macro" params="name xyz parent">
+            <link name="${name}_link">
+                <visual>
+                    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
+                    <geometry>
+                        <cylinder radius="${bumper_radius}" length="${bumper_length}"/>
+                    </geometry>
+                    <material name="${bumper_material}"/>
+                </visual>
+
+                <collision>
+                    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
+                    <geometry>
+                        <cylinder radius="${bumper_radius}" length="${bumper_length}"/>
+                    </geometry>
+                </collision>
+
+                <inertial>
+                    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
+                    <mass value="0.0"/>
+                    <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+                </inertial>
+            </link>
+
+            <joint name="${name}_joint" type="fixed">
+                <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
+                <parent link="${parent}"/>
+                <child link="${name}_link"/>
+            </joint>
+
+            <gazebo reference="${name}_link">
+                <material>Gazebo/Grey</material>
+            </gazebo>
+        </xacro:macro>
+        <!-- Rod -->
+        <!-- Bumper -->
+
+
+
+        <!-- Accessory -->
+        <xacro:macro name="accessory_macro" params="name radius length xyz parent">
+            <link name="${name}_link">
+                <visual>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 ${pi/2} 0.0"/>
+                    <geometry>
+                        <cylinder radius="${radius}" length="${length}"/>
+                    </geometry>
+                    <material name="${accessory_material}"/>
+                </visual>
+
+                <collision>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 ${pi/2} 0.0"/>
+                    <geometry>
+                        <cylinder radius="${radius}" length="${length}"/>
+                    </geometry>
+                </collision>
+
+                <inertial>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 ${pi/2} 0.0"/>
+                    <mass value="0.0"/>
+                    <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+                </inertial>
+            </link>
+
+            <joint name="${name}_joint" type="fixed">
+                <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
+                <parent link="${parent}"/>
+                <child link="${name}_link"/>
+            </joint>
+
+            <gazebo reference="${name}_link">
+                <material>Gazebo/Grey</material>
+            </gazebo>
+        </xacro:macro>
+        <!-- Accessory -->
+
+
 
         <!-- Base -->
-        <link name="${name}">
-            <visual>
-                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-                <geometry>
-                    <box size="${size_x} ${size_y} ${size_z}"/>
-                </geometry>
+        <xacro:macro name="base_macro" params="name">
+            <link name="${name}">
+                <visual>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                    <geometry>
+                        <box size="${base_size_x} ${base_size_y} ${base_size_z}"/>
+                    </geometry>
+                    <material name="${base_material}"/>
+                </visual>
 
-                <material name="${base_material}"/>
-            </visual>
+                <collision>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                    <geometry>
+                        <box size="${base_size_x} ${base_size_y} ${base_size_z}"/>
+                    </geometry>
+                </collision>
 
-            <collision>
-                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-                <geometry>
-                    <box size="${size_x} ${size_y} ${size_z}"/>
-                </geometry>
-            </collision>
+                <inertial>
+                    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                    <mass value="${base_mass}"/>
+                    <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+                </inertial>
+            </link>
+            <gazebo reference="${name}">
+                <material>Gazebo/Blue</material>
+            </gazebo>
+        </xacro:macro>
+        <!-- Base -->
+        <!-- ======================================================== Macros -->
+    
 
-            <inertial>
-                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-                <mass value="${mass}"/>
-                <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
-            </inertial>
-        </link>
 
-        <gazebo reference="${name}">
-            <material>Gazebo/Blue</material>
-        </gazebo>
+        <!-- Links ========================================================= -->
+        <!-- Base -->
+        <xacro:base_macro name="${name}"/>
+        <!-- Base -->
 
-        <xacro:shaft_macro name="shaft_front" origin="${shaft_front_origin}" parent="${name}"/>
-        <xacro:shaft_macro name="shaft_rear" origin="${shaft_rear_origin}" parent="${name}"/>
+        <!-- Shafts -->
+        <xacro:shaft_macro name="shaft_front"
+                           xyz="${shaft_front_xyz}"
+                           parent="${name}"/>
+        <xacro:shaft_macro name="shaft_rear"
+                           xyz="${shaft_rear_xyz}"
+                           parent="${name}"/>
+        <!-- Shafts -->
+
+        <!-- Bumpers -->
+        <xacro:bumper_macro name="bumper_front"
+                            xyz="${bumper_front_xyz}"
+                            parent="${name}"/>
+        <xacro:holder_macro name="holder_front_left"
+                            xyz="${holder_front_left_xyz}"
+                            parent="${name}"/>
+        <xacro:holder_macro name="holder_front_right"
+                            xyz="${holder_front_right_xyz}"
+                            parent="${name}"/>
+
+        <xacro:bumper_macro name="bumper_rear"
+                            xyz="${bumper_rear_xyz}"
+                            parent="${name}"/>
+        <xacro:holder_macro name="holder_rear_left"
+                            xyz="${holder_rear_left_xyz}"
+                            parent="${name}"/>
+        <xacro:holder_macro name="holder_right_right"
+                            xyz="${holder_rear_right_xyz}"
+                            parent="${name}"/>
+        <!-- Bumpers -->
+
+        <!-- Accessory-->
+        <xacro:accessory_macro name="accessory_left_front"
+                               radius="${accessory_front_radius}"
+                               length="${accessory_front_length}"
+                               xyz="${accessory_left_front_xyz}"
+                               parent="${name}"/>
+        <xacro:accessory_macro name="accessory_left_rear"
+                               radius="${accessory_rear_radius}"
+                               length="${accessory_rear_length}"
+                               xyz="${accessory_left_rear_xyz}"
+                               parent="${name}"/>
         
+        <xacro:accessory_macro name="accessory_right_front"
+                               radius="${accessory_front_radius}"
+                               length="${accessory_front_length}"
+                               xyz="${accessory_right_front_xyz}"
+                               parent="${name}"/>
+        <xacro:accessory_macro name="accessory_right_rear"
+                               radius="${accessory_rear_radius}"
+                               length="${accessory_rear_length}"
+                               xyz="${accessory_right_rear_xyz}"
+                               parent="${name}"/>
+        <!-- Accessory-->
+        <!-- ======================================================= Links -->
     </xacro:macro>
 </robot>

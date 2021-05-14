@@ -14,7 +14,7 @@
         <!-- Link -->
         <link name="wheel_${side}_${part}_link">
             <visual>
-                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <origin xyz="0.0 0.0 0.0" rpy="${pi/2*0.0} 0.0 0.0"/>
                 <geometry>
                     <!-- <cylinder radius="${radius}" length="${length}"/> -->
                     <mesh filename="package://mrvk_description/meshes/wheels/${side}_tire.stl"
@@ -54,14 +54,6 @@
                 <hardwareInterface>VelocityJointInterface</hardwareInterface>''
             </joint>
         </transmission>
-
-        <!-- <gazebo reference="${side}_${part}_wheel">
-            <mu1 value="200.0"/>
-            <mu2 value="100.0"/>
-            <kp value="100000.0"/>
-            <kd value="1.0" />
-            <material>Gazebo/FlatBlack</material>
-        </gazebo> -->
 
         <gazebo reference="wheel_${side}_${part}_link">
             <mu1 value="1.0"/>
