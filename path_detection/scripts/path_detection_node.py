@@ -15,9 +15,9 @@ class PathDetector:
         self.thresh_upper_hsv = []  # upper [H,S,V] boundaries of accepted pathway color
 
         # parameters for tuning
-        self.K = 5  # number of dominant colors to extract in initialization
-        self.offset_lower = [15, 25, 15]  # [H,S,V] negative offset
-        self.offset_upper = [15, 25, 15]  # [H,S,V] positive offset
+        self.K = 2  # number of dominant colors to extract in initialization
+        self.offset_lower = [15, 25, 20]  # [H,S,V] negative offset
+        self.offset_upper = [15, 25, 20]  # [H,S,V] positive offset
         self.field_of_vision = None
         self.controller = self.Controller(pub)
     
@@ -127,7 +127,7 @@ class PathDetector:
                 v = rate_limiter(self.v, v, -0.1, 0.1)
 
                 w = -math.pi/2 + ang
-                w = saturation(w, -0.5, 0.5)
+                w = saturation(5*w, -0.5, 0.5)
                 w = rate_limiter(self.w, w, -0.1, 0.1)
 
             # MODE 1 - rotate until the new clear path is detected
@@ -153,7 +153,7 @@ class PathDetector:
             shape = img.shape[0:2]
             lower_width = shape[1]*3.0
             upper_width = shape[1]/2.0
-            height = shape[0]/2.0
+            height = shape[0]/1.5
 
             self.field_of_vision = self.FieldOfVision(shape, lower_width, upper_width, height, type='Centralized')
 
@@ -168,10 +168,10 @@ class PathDetector:
         # find K dominant colors of the extracted area, to determine the color of the pathway
         compactness, labels, centers = cv2.kmeans(K=self.K,
                                                   flags = cv2.KMEANS_RANDOM_CENTERS,
-                                                  attempts=1,
+                                                  attempts=2,
                                                   bestLabels=None,
                                                   data=centerIm,
-                                                  criteria= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 3, 1.0))
+                                                  criteria= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0))
 
 
         # convert dominant colors array from float32 [K,3] to uint8t [K,3]
@@ -212,10 +212,31 @@ class PathDetector:
         for i in range(1, numpy.size(self.thresh_lower_hsv, 0)):
             mask_comb = cv2.bitwise_or(mask_comb, mask_array[i])        
         
-        kernel = numpy.ones((7, 7), numpy.uint8)
+        # morphological binary closing
+        kernel = numpy.ones((3, 3), numpy.uint8)
         mask_comb = cv2.morphologyEx(mask_comb, cv2.MORPH_CLOSE, kernel)
 
+        # restrict the mask based on possible sidewalk location
         mask_comb = mask_comb*self.field_of_vision.mask
+
+        # Find the largest contour
+        _, cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)       
+        cnt = max(cnts, key=cv2.contourArea)
+
+        # Extract other contours apart from the largest        
+        out = numpy.zeros(mask_comb.shape, numpy.uint8)
+        cv2.drawContours(out, [cnt], -1, 255, cv2.FILLED)
+        mask_comb = cv2.bitwise_and(mask_comb, out)
+
+        # Morphological binary closing
+        kernel = numpy.ones((11, 11), numpy.uint8)
+        mask_comb = cv2.morphologyEx(mask_comb, cv2.MORPH_CLOSE, kernel)
+        
+        # Find and fill(close) the largest contour
+        _, cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        cnt2 = max(cnts, key=cv2.contourArea)        
+        cv2.fillPoly(mask_comb, pts=[cnt2], color=(255, 255, 255))
+
         return mask_comb
     
     def check_passability(self, arr):
@@ -303,7 +324,7 @@ class PathDetector:
 
 def main():
     rospy.init_node('path_detection')
-    pub = rospy.Publisher('/test_robot/cmd_vel', Twist, queue_size = 10)
+    pub = rospy.Publisher('/shoddy/cmd_vel', Twist, queue_size = 10)
     pathDet = PathDetector(pub)
     rospy.Subscriber("/camera/image_raw", Image, pathDet.process_img)
     rospy.spin()
