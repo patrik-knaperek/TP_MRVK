@@ -1,5 +1,28 @@
 <?xml version="1.0"?>
 <robot name="shoddy" xmlns:xacro="http://wiki.ros.org/xacro">
+    <!-- Global properties ================================================= -->
+    <!-- Shaft -->
+    <xacro:property name="shaft_radius" value="0.015"/>
+    <xacro:property name="shaft_length" value="0.38"/>
+
+    <xacro:property name="shaft_front_x" value="0.14"/>
+    <xacro:property name="shaft_front_y" value="0.0"/>
+    <xacro:property name="shaft_front_z" value="-0.05"/>
+
+    <xacro:property name="shaft_rear_x" value="-0.14"/>
+    <xacro:property name="shaft_rear_y" value="0.0"/>
+    <xacro:property name="shaft_rear_z" value="-0.05"/>
+    <!-- Shaft -->
+
+    <!-- Base -->
+    <xacro:property name="base_size_x" value="0.47"/>
+    <xacro:property name="base_size_y" value="0.315"/>
+    <xacro:property name="base_size_z" value="0.168"/>
+    <!-- Base -->
+    <!-- ================================================= Global properties -->
+
+
+
     <xacro:macro name="base_macro" params="name">
         <!-- Properties ==================================================== -->
         <!-- Bumper -->
@@ -36,20 +59,13 @@
         <!-- Accessory -->
 
         <!-- Shaft -->
-        <xacro:property name="shaft_radius" value="0.015"/>
-        <xacro:property name="shaft_length" value="0.38"/>
-
-        <xacro:property name="shaft_front_xyz" value="0.145 0.0 -0.05"/>
-        <xacro:property name="shaft_rear_xyz" value="-0.145 0.0 -0.05"/>
-
-        <xacro:property name="shaft_material" value="Grey"/> 
+        <xacro:property name="shaft_material" value="Grey"/>
         <!-- Shaft -->
-
+        
         <!-- Base -->
         <xacro:property name="base_size_x" value="0.47"/>
         <xacro:property name="base_size_y" value="0.315"/>
         <xacro:property name="base_size_z" value="0.168"/>
-
         <xacro:property name="base_mass" value="30"/>
         
         <xacro:property name="base_material" value="Blue"/>
@@ -58,39 +74,6 @@
 
 
         <!-- Macros ======================================================== -->
-        <!-- Shaft -->
-        <xacro:macro name="shaft_macro" params="name xyz parent">
-            <link name="${name}_link">
-                <visual>
-                    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
-                    <geometry>
-                        <cylinder radius="${shaft_radius}" length="${shaft_length}"/>
-                    </geometry>
-
-                    <material name="${shaft_material}"/>
-                </visual>
-
-                <inertial>
-                    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
-                    <mass value="0.0"/>
-                    <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
-                </inertial>
-            </link>
-
-            <joint name="${name}_joint" type="fixed">
-                <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
-                <parent link="${parent}"/>
-                <child link="${name}_link"/>
-            </joint>
-
-            <gazebo reference="${name}_link">
-                <material>Gazebo/Grey</material>
-            </gazebo>
-        </xacro:macro>
-        <!-- Shaft -->
-
-
-
         <!-- Bumper -->
         <!-- Holder -->
         <xacro:macro name="holder_macro" params="name xyz parent">
@@ -208,6 +191,39 @@
 
 
 
+        <!-- Shaft -->
+        <xacro:macro name="shaft_macro" params="name xyz parent">
+            <link name="${name}_link">
+                <visual>
+                    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
+                    <geometry>
+                        <cylinder radius="${shaft_radius}" length="${shaft_length}"/>
+                    </geometry>
+
+                    <material name="${shaft_material}"/>
+                </visual>
+
+                <inertial>
+                    <origin xyz="0.0 0.0 0.0" rpy="${pi/2} 0.0 0.0"/>
+                    <mass value="0.0"/>
+                    <inertia ixx="0.0" ixy="0.0" ixz="0.0" iyy="0.0" iyz="0.0" izz="0.0"/>
+                </inertial>
+            </link>
+
+            <joint name="${name}_joint" type="fixed">
+                <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
+                <parent link="${parent}"/>
+                <child link="${name}_link"/>
+            </joint>
+
+            <gazebo reference="${name}_link">
+                <material>Gazebo/Grey</material>
+            </gazebo>
+        </xacro:macro>
+        <!-- Shaft -->
+
+
+
         <!-- Base -->
         <xacro:macro name="base_macro" params="name">
             <link name="${name}">
@@ -248,10 +264,10 @@
 
         <!-- Shafts -->
         <xacro:shaft_macro name="shaft_front"
-                           xyz="${shaft_front_xyz}"
+                           xyz="${shaft_front_x} ${shaft_front_y} ${shaft_front_z}"
                            parent="${name}"/>
         <xacro:shaft_macro name="shaft_rear"
-                           xyz="${shaft_rear_xyz}"
+                           xyz="${shaft_rear_x} ${shaft_rear_y} ${shaft_rear_z}"
                            parent="${name}"/>
         <!-- Shafts -->
 
@@ -302,32 +318,4 @@
         <!-- Accessory-->
         <!-- ======================================================= Links -->
     </xacro:macro>
-
-    <joint name="imu_joint" type="fixed">
-        <axis xyz="1 0 0"/> <!-- 0 1 0 -->
-        <origin xyz="0 0 0.19"/>
-        <parent link="base_link"/>
-        <child link="imu_link"/>
-    </joint>
-
-
-    <link name="imu_link">
-      <inertial>
-        <mass value="0.001"/>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.0001"/>
-      </inertial>
-      <visual>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry>
-          <box size="0.001 0.001 0.001"/>
-        </geometry>
-      </visual>
-      <collision>
-        <origin rpy="0 0 0" xyz="0 0 0"/>
-        <geometry>
-          <box size=".001 .001 .001"/>
-        </geometry>
-      </collision>
-    </link>
 </robot>

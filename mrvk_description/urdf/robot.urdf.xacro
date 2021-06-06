@@ -6,6 +6,7 @@
 
     <xacro:include filename="$(find mrvk_description)/urdf/base_macro.urdf.xacro"/>
     <xacro:include filename="$(find mrvk_description)/urdf/wheel_macro.urdf.xacro"/>
+    <xacro:include filename="$(find mrvk_description)/urdf/imu_macro.urdf.xacro"/>
     <xacro:include filename="$(find mrvk_description)/urdf/lidar_macro.urdf.xacro"/>
     <xacro:include filename="$(find mrvk_description)/urdf/camera_macro.urdf.xacro"/>
     <xacro:include filename="$(find mrvk_description)/urdf/ultrasonic_sensor_macro.urdf.xacro"/>
@@ -19,26 +20,26 @@
     <xacro:wheel_macro
         side="left"
         part="front"
-        origin="0.14 0.20 -0.05"
+        xyz="${shaft_front_x} 0.2 ${shaft_front_z}"
         parent="base_link"/>
-
     <xacro:wheel_macro
         side="left"
         part="rear"
-        origin="-0.14 0.20 -0.05"
+        xyz="${shaft_rear_x} 0.2 ${shaft_rear_z}"
         parent="base_link"/>
-
     <xacro:wheel_macro
         side="right"
         part="front"
-        origin="0.14 -0.20 -0.05"
+        xyz="${shaft_front_x} -0.2 ${shaft_front_z}"
         parent="base_link"/>
-
     <xacro:wheel_macro
         side="right"
         part="rear"
-        origin="-0.14 -0.20 -0.05"
+        xyz="${shaft_rear_x} -0.2 ${shaft_rear_z}"
         parent="base_link"/>
+    
+    <!-- IMU -->
+    <xacro:imu_macro name="imu_link" xyz="0.0 0.0 0.0" parent="base_link"/>
     
     <!-- LIDAR -->
     <xacro:lidar_macro name="sensor_laser_link" parent="base_link"/>
@@ -47,10 +48,28 @@
     <xacro:camera_macro name="camera_link" parent="base_link"/>
 
     <!-- Ultrasonic sensors -->
-    <xacro:ultrasonic_sensor_macro name="ultrasonic_sensor_front_left_link" xyz="0.235 ${-0.315/2*0.7} 0.05" parent="base_link"/>
-    <xacro:ultrasonic_sensor_macro name="ultrasonic_sensor_front_middle_link" xyz="0.235 0.0 0.05" parent="base_link"/>
-    <xacro:ultrasonic_sensor_macro name="ultrasonic_sensor_front_right_link" xyz="0.235 ${0.315/2*0.7} 0.05" parent="base_link"/>
-    <xacro:ultrasonic_sensor_macro name="ultrasonic_sensor_rear_left_link" xyz="-0.235 ${-0.315/2*0.7} 0.05" parent="base_link"/>
-    <xacro:ultrasonic_sensor_macro name="ultrasonic_sensor_rear_middle_link" xyz="-0.235 0.0 0.05" parent="base_link"/>
-    <xacro:ultrasonic_sensor_macro name="ultrasonic_sensor_rear_right_link" xyz="-0.235 ${0.315/2*0.7} 0.05" parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_front_left_link"
+        xyz="${base_size_x/2} ${-base_size_y/2*0.7} 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_front_middle_link"
+        xyz="${base_size_x/2} 0.0 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_front_right_link"
+        xyz="${base_size_x/2} ${base_size_y/2*0.7} 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_rear_left_link"
+        xyz="${-base_size_x/2} ${-base_size_y/2*0.7} 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_rear_middle_link"
+        xyz="${-base_size_x/2} 0.0 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro 
+        name="ultrasonic_sensor_rear_right_link"
+        xyz="${-base_size_x/2} ${base_size_y/2*0.7} 0.05"
+        parent="base_link"/>
 </robot>

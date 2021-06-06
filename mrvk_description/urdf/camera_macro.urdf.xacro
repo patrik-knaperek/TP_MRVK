@@ -9,7 +9,7 @@
 
         <xacro:property name="base_upper_x" value="0.16"/>
         <xacro:property name="base_upper_y" value="0.0"/>
-        <xacro:property name="base_upper_z" value="${0.084 + base_lower_length + base_shift_z}"/>
+        <xacro:property name="base_upper_z" value="${base_size_z/2 + base_lower_length + base_upper_length/2}"/>
 
         <!-- Base lower -->
         <xacro:property name="base_lower_radius" value="0.02"/>
@@ -17,7 +17,7 @@
 
         <xacro:property name="base_lower_x" value="${base_upper_x - base_upper_radius + base_lower_radius}"/>
         <xacro:property name="base_lower_y" value="0.0"/>
-        <xacro:property name="base_lower_z" value="${0.084 + base_lower_length/2}"/>
+        <xacro:property name="base_lower_z" value="${base_size_z/2 + base_lower_length/2}"/>
 
         <!-- Base holder -->
         <xacro:property name="base_holder_radius" value="0.005"/>
@@ -26,8 +26,6 @@
         <xacro:property name="base_holder_x" value="${box_x}"/>
         <xacro:property name="base_holder_y" value="${box_y}"/>
         <xacro:property name="base_holder_z" value="${box_z}"/>
-
-        <xacro:property name="base_shift_z" value="${base_upper_length/2}"/>
 
         <xacro:property name="pitch" value="${pi/8}"/>
 
@@ -63,7 +61,7 @@
 
         <xacro:property name="box_x" value="${base_upper_x}"/>
         <xacro:property name="box_y" value="${base_upper_y}"/>
-        <xacro:property name="box_z" value="${base_upper_z + base_shift_z + holder_height - box_size_z/2}"/>
+        <xacro:property name="box_z" value="${base_upper_z + base_upper_length/2 + holder_height - box_size_z/2}"/>
 
         <xacro:property name="box_material" value="DarkGrey"/>
         <!-- Box -->

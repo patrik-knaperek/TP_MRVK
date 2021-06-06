@@ -13,8 +13,8 @@
             <wheelSeparation>0.48</wheelSeparation>
             <wheelDiameter>0.23</wheelDiameter>
             <robotBaseFrame>base_link</robotBaseFrame>
-            <wheel_accel>1</wheel_accel>
-            <torque>8</torque>
+            <wheel_accel>2</wheel_accel>
+            <torque>10</torque>
             <commandTopic>cmd_vel</commandTopic>
             <odometryTopic>odom</odometryTopic>
             <odometryFrame>odom</odometryFrame>
@@ -31,6 +31,19 @@
         </plugin>
     </gazebo>
 
+    <!-- IMU -->
+    <gazebo>
+        <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+            <alwaysOn>true</alwaysOn>
+            <bodyName>imu_link</bodyName>
+            <topicName>imu_data</topicName>
+            <gaussianNoise>2.89e-08</gaussianNoise>
+            <updateRate>20.0</updateRate>
+            <xyzOffsets>0 0 0</xyzOffsets>
+            <rpyOffsets>0 0 0</rpyOffsets>
+        </plugin>
+    </gazebo>
+
     <!-- Hokuyo URG-04LX Laser Range Finder-->
     <gazebo reference="sensor_laser_link">
         <sensor type="gpu_ray" name="head_hokuyo_sensor">
@@ -39,8 +52,8 @@
             <update_rate>60</update_rate>
             <ray>
                 <scan>
-                    <horizontal> -->                        
-                        <!-- <resolution>0.36</resolution>                         -->
+                    <horizontal>                         
+                        <!-- <resolution>0.36</resolution> -->
                         <samples>1000</samples>
                         <min_angle>-3.14159</min_angle>
                         <max_angle>3.14159</max_angle>
@@ -84,7 +97,6 @@
             <far>300</far>
             </clip>
         </camera>
-        
         <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
             <alwaysOn>true</alwaysOn>
             <updateRate>0.0</updateRate>
@@ -100,17 +112,5 @@
             <distortionT2>0.0</distortionT2>
         </plugin>
         </sensor>
-    </gazebo>
-
-    <gazebo>
-        <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
-            <alwaysOn>true</alwaysOn>
-            <bodyName>imu_link</bodyName>
-            <topicName>imu_data</topicName>
-            <gaussianNoise>2.89e-08</gaussianNoise>
-            <updateRate>20.0</updateRate>
-            <xyzOffsets>0 0 0</xyzOffsets>
-            <rpyOffsets>0 0 0</rpyOffsets>
-        </plugin>
     </gazebo>
 </robot>
