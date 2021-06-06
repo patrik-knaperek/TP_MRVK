@@ -84,6 +84,7 @@
             <far>300</far>
             </clip>
         </camera>
+        
         <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
             <alwaysOn>true</alwaysOn>
             <updateRate>0.0</updateRate>
@@ -99,5 +100,17 @@
             <distortionT2>0.0</distortionT2>
         </plugin>
         </sensor>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+            <alwaysOn>true</alwaysOn>
+            <bodyName>imu_link</bodyName>
+            <topicName>imu_data</topicName>
+            <gaussianNoise>2.89e-08</gaussianNoise>
+            <updateRate>20.0</updateRate>
+            <xyzOffsets>0 0 0</xyzOffsets>
+            <rpyOffsets>0 0 0</rpyOffsets>
+        </plugin>
     </gazebo>
 </robot>
