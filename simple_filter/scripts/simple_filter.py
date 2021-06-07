@@ -20,6 +20,8 @@ class SimpleFilter(object):
         filteredData.orientation.z = (data.orientation.z + self.IMUData.orientation.z)/2
         filteredData.orientation.w = (data.orientation.w + self.IMUData.orientation.w)/2
 
+        self.odom_filtered_pub.publish(filteredData)
+
 def main():
     rospy.init_node('imu_quat_to_eul_node')
     odom_filtered_pub = rospy.Publisher('/odom_filtered', Odometry, queue_size = 10)    
