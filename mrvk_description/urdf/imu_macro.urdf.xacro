@@ -5,6 +5,8 @@
         <xacro:property name="box_size_x" value="0.001"/>
         <xacro:property name="box_size_y" value="0.001"/>
         <xacro:property name="box_size_z" value="0.001"/>
+
+        <xacro:property name="imu_material" value="Black"/>
         <!-- ==================================================== Properties -->
 
 
@@ -16,6 +18,7 @@
                 <geometry>
                     <box size="${box_size_x} ${box_size_y} ${box_size_z}"/>
                 </geometry>
+                <material name="${imu_material}"/>
             </visual>
 
             <collision>
@@ -38,6 +41,10 @@
             <parent link="${parent}"/>
             <child link="${name}"/>
         </joint>
-        <!-- ========================================================= Link  -->
+
+        <gazebo reference="${name}">
+            <material>Gazebo/Black</material>
+        </gazebo>
+        <!-- ========================================================== Link -->
     </xacro:macro>
 </robot>

@@ -46,6 +46,7 @@
 
         <transmission name="wheel_${side}_${part}_trans">
             <type>transmission_interface/SimpleTransmission</type>
+
             <actuator name="wheel_${side}_${part}_motor">
                 <mechanicalReduction>1</mechanicalReduction>
             </actuator>

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(path_detection)
+project(detected_path_layer)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,11 +8,12 @@ project(path_detection)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  nav_msgs
+  costmap_2d
+  dynamic_reconfigure
+  roscpp
   rospy
-  sensor_msgs
-  message_generation
+  std_msgs
+  path_detection
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,10 +50,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-    FILES
-    DetectedPath.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -69,10 +71,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-    DEPENDENCIES
-    std_msgs    # geometry_msgs    # nav_msgs    # sensor_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -105,8 +107,14 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES path_detection
-   CATKIN_DEPENDS geometry_msgs nav_msgs rospy sensor_msgs message_runtime
+#  LIBRARIES simple_layers
+   CATKIN_DEPENDS
+       costmap_2d
+       dynamic_reconfigure
+       roscpp
+       rospy
+       std_msgs
+       path_detection
 #  DEPENDS system_lib
 )
 
@@ -117,14 +125,11 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/path_detection.cpp
-# )
+add_library(detected_path_layer src/detected_path_layer.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -134,7 +139,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/path_detection_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/simple_layers_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -198,7 +203,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_path_detection.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_simple_layers.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

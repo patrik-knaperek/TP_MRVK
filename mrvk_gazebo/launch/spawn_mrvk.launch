@@ -2,14 +2,13 @@
 <launch>
 	<rosparam command="load"
             file="$(find mrvk_description)/config/diffdrive.yaml"
-            ns="mrvk_drive_controller"/>
+            ns="shoddy"/>
 
-
-	<node name="mrvk_controller_spawner" pkg="controller_manager" type="spawner"
-    	args="mrvk_drive_controller --shutdown-timeout 3"/>
+	<!-- <node name="mrvk_controller_spawner" pkg="controller_manager" type="spawner"
+    	args="mrvk_drive_controller shutdown-timeout 3"/> -->
 
 	<node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
-    	<param name="default_topic" value="/mrvk_drive_controller/cmd_vel"/>
+    	<param name="default_topic" value="/shoddy/cmd_vel"/>
 	</node>
 
 	<!-- Convert an xacro and put on parameter server -->

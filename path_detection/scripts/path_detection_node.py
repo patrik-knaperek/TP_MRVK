@@ -5,6 +5,7 @@ import numpy
 import cv2
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
+from path_detection.msg import DetectedPath
 
 class PathDetector:
     def __init__(self, pub):
@@ -194,7 +195,13 @@ class PathDetector:
 
     def detectPath(self, img):
         mask_comb = self.create_mask(img)
-        img = self.find_path_center(img, mask_comb)
+        dp = DetectedPath()
+        dp.height = mask_comb.shape[0]
+        dp.width = mask_comb.shape[1]
+        dp.frame = list(mask_comb.flatten())
+        self.pub.publish(dp)
+        # img = self.find_path_center(img, mask_comb)
+
         return img, mask_comb
 
     def create_mask(self, img):
@@ -324,7 +331,8 @@ class PathDetector:
 
 def main():
     rospy.init_node('path_detection')
-    pub = rospy.Publisher('/shoddy/cmd_vel', Twist, queue_size = 10)
+    # pub = rospy.Publisher('/shoddy/cmd_vel', Twist, queue_size = 10)
+    pub = rospy.Publisher('/shoddy/detected_path', DetectedPath, queue_size=10)
     pathDet = PathDetector(pub)
     rospy.Subscriber("/camera/image_raw", Image, pathDet.process_img)
     rospy.spin()
