@@ -10,7 +10,7 @@
 #include <vector>
 #include <math.h>
 
-#define PI        3.14159265359
+#define PI        3.1415926536
 
 namespace costmap_2d {
     class DetectedPathLayer : public costmap_2d::Layer {
@@ -40,19 +40,23 @@ namespace costmap_2d {
             
             unsigned int FRAME_HEIGHT;
             unsigned int FRAME_WIDTH;
-
             std::vector<unsigned char> frame;
+
             std::vector<double> mark_x;
             std::vector<double> mark_y;
+            const unsigned int PENALTY = 252;
 
             // Camera parameters
-            const unsigned int FRAME_STARTING_IDX = 280;        // Starting index of the field of vision of the robot
-            const double CAMERA_FOCAL_LENGTH = 487;             // Focal length
-            const double CAMERA_HEIGHT = 0.5475;                // Camera height
+            const double CAMERA_FOCAL_LENGTH = 474.4268835;     // Focal length
+            const double CAMERA_X = 0.1946454825;               // Camera x-shift from the center of the robot
+            const double CAMERA_HEIGHT = 0.5706493713;          // Camera height
             const double CAMERA_PITCH = PI/8;                   // Camera pitch
-            const double CAMERA_X = 0.1974991192;               // Camera shift from the center of the robot
+            const double PHI = PI - CAMERA_PITCH;
             const double COS_CAMERA_PITCH = cos(CAMERA_PITCH);
             const double SIN_CAMERA_PITCH = sin(CAMERA_PITCH);
+            const unsigned int FRAME_STARTING_IDX = 280;        // The first index of the field of vision of the robot
+            // const unsigned int FRAME_STARTING_IDX = ceil(CAMERA_FOCAL_LENGTH*tan(CAMERA_PITCH - PI));   // The index of the first positive measurement
+            const unsigned int FRAME_ENDING_IDX = 550;          // The last index of the field of vision of the robot
     };
 }
 

@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<robot name="shoddy" xmlns:xacro="http://wiki.ros.org/xacro">
+    <xacro:include filename="$(find mrvk_description)/urdf/robot.plugins.xacro"/>
+
+    <xacro:include filename="$(find mrvk_description)/urdf/materials.urdf.xacro"/>
+
+    <xacro:include filename="$(find mrvk_description)/urdf/base_macro.urdf.xacro"/>
+    <xacro:include filename="$(find mrvk_description)/urdf/wheel_macro.urdf.xacro"/>
+    <xacro:include filename="$(find mrvk_description)/urdf/imu_macro.urdf.xacro"/>
+    <xacro:include filename="$(find mrvk_description)/urdf/lidar_macro.urdf.xacro"/>
+    <xacro:include filename="$(find mrvk_description)/urdf/camera_macro.urdf.xacro"/>
+    <xacro:include filename="$(find mrvk_description)/urdf/ultrasonic_sensor_macro.urdf.xacro"/>
+    <xacro:include filename="$(find mrvk_description)/urdf/landmark_macro.urdf.xacro"/>
+
+
+    
+    <!-- Body -->
+    <xacro:base_macro name="base_link"/>
+
+    <!-- Wheels -->
+    <xacro:wheel_macro
+        side="left"
+        part="front"
+        xyz="${SHAFT_FRONT_X} 0.2 ${SHAFT_FRONT_Z}"
+        parent="base_link"/>
+    <xacro:wheel_macro
+        side="left"
+        part="rear"
+        xyz="${SHAFT_REAR_X} 0.2 ${SHAFT_REAR_Z}"
+        parent="base_link"/>
+    <xacro:wheel_macro
+        side="right"
+        part="front"
+        xyz="${SHAFT_FRONT_X} -0.2 ${SHAFT_FRONT_Z}"
+        parent="base_link"/>
+    <xacro:wheel_macro
+        side="right"
+        part="rear"
+        xyz="${SHAFT_REAR_X} -0.2 ${SHAFT_REAR_Z}"
+        parent="base_link"/>
+    
+    <!-- IMU -->
+    <xacro:imu_macro name="imu_link" xyz="0.0 0.0 0.0" parent="base_link"/>
+    
+    <!-- LIDAR -->
+    <xacro:lidar_macro name="sensor_laser_link" parent="base_link"/>
+    
+    <!-- Camera -->
+    <xacro:camera_macro name="camera_link" parent="base_link"/>
+
+    <!-- <xacro:landmark_macro name="x_middle" xyz="1.55 0.0 ${-0.165}" size="0.01 0.82 0.01" parent="base_link"/> -->
+    <!-- <xacro:landmark_macro name="x_end" xyz="4.0 0.0 ${-0.165}" size="0.01 0.82 0.01" parent="base_link"/> -->
+    <!-- <xacro:landmark_macro name="x_01" xyz="0.49 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_02" xyz="0.59 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_03" xyz="0.69 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_04" xyz="0.79 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_05" xyz="0.89 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_06" xyz="0.99 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_07" xyz="1.09 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_08" xyz="1.19 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_09" xyz="1.29 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_10" xyz="1.39 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_11" xyz="1.49 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_12" xyz="1.59 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_13" xyz="1.69 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_14" xyz="1.79 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_15" xyz="1.89 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_16" xyz="1.99 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_17" xyz="2.09 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_18" xyz="2.19 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_19" xyz="2.29 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_20" xyz="2.39 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_21" xyz="2.49 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_22" xyz="2.59 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_23" xyz="2.69 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_24" xyz="2.79 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_25" xyz="2.89 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_26" xyz="2.99 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_27" xyz="3.09 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_28" xyz="3.19 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_29" xyz="3.29 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_30" xyz="3.39 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_31" xyz="3.49 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_32" xyz="3.59 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_33" xyz="3.69 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_34" xyz="3.79 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_35" xyz="3.89 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="x_36" xyz="3.99 0.0 ${-0.165}" size="0.01 4.0 0.01" parent="base_link"/> -->
+
+    <!-- <xacro:landmark_macro name="y_middle" xyz="1.55 0.0 ${-0.165}" size="0.01 0.82 0.01" parent="base_link"/> -->
+    <!-- <xacro:landmark_macro name="y_end" xyz="4.0 0.0 ${-0.165}" size="0.01 0.82 0.01" parent="base_link"/> -->
+    <!-- <xacro:landmark_macro name="y_01" xyz="2.0 0.0 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_02" xyz="2.0 0.1 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_03" xyz="2.0 0.2 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_04" xyz="2.0 0.3 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_05" xyz="2.0 0.4 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_06" xyz="2.0 0.5 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_07" xyz="2.0 0.6 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_08" xyz="2.0 0.7 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_09" xyz="2.0 0.8 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_10" xyz="2.0 0.9 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_11" xyz="2.0 1.0 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_12" xyz="2.0 1.1 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_13" xyz="2.0 1.2 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_14" xyz="2.0 1.3 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_15" xyz="2.0 1.4 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_16" xyz="2.0 1.5 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_17" xyz="2.0 1.6 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_18" xyz="2.0 1.7 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_19" xyz="2.0 1.8 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_20" xyz="2.0 1.9 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_21" xyz="2.0 2.0 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_22" xyz="2.0 -2.0 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_23" xyz="2.0 -1.9 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_24" xyz="2.0 -1.8 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_25" xyz="2.0 -1.7 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_26" xyz="2.0 -1.6 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_27" xyz="2.0 -1.5 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_28" xyz="2.0 -1.4 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_29" xyz="2.0 -1.3 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_30" xyz="2.0 -1.2 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_31" xyz="2.0 -1.1 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_32" xyz="2.0 -1.0 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_33" xyz="2.0 -0.9 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_34" xyz="2.0 -0.8 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_35" xyz="2.0 -0.7 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_36" xyz="2.0 -0.6 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_37" xyz="2.0 -0.5 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_38" xyz="2.0 -0.4 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_39" xyz="2.0 -0.3 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_40" xyz="2.0 -0.2 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/>
+    <xacro:landmark_macro name="y_41" xyz="2.0 -0.1 ${-0.165}" size="4.0 0.01 0.01" parent="base_link"/> -->
+        
+    <!-- Ultrasonic sensors -->
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_front_left_link"
+        xyz="${BASE_SIZE_X/2} ${-BASE_SIZE_Y/2*0.7} 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_front_middle_link"
+        xyz="${BASE_SIZE_X/2} 0.0 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_front_right_link"
+        xyz="${BASE_SIZE_X/2} ${BASE_SIZE_Y/2*0.7} 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_rear_left_link"
+        xyz="${-BASE_SIZE_X/2} ${-BASE_SIZE_Y/2*0.7} 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro
+        name="ultrasonic_sensor_rear_middle_link"
+        xyz="${-BASE_SIZE_X/2} 0.0 0.05"
+        parent="base_link"/>
+    <xacro:ultrasonic_sensor_macro 
+        name="ultrasonic_sensor_rear_right_link"
+        xyz="${-BASE_SIZE_X/2} ${BASE_SIZE_Y/2*0.7} 0.05"
+        parent="base_link"/>
+</robot>

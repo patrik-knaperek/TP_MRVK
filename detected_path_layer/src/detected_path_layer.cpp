@@ -35,10 +35,12 @@ namespace costmap_2d {
 
         ros::spinOnce();
 
-        *min_x = std::min(*min_x, this->min_x);
-        *min_y = std::min(*min_y, this->min_y);
-        *max_x = std::max(*max_x, this->max_x);
-        *max_y = std::max(*max_y, this->max_y);
+        if (!(mark_x.empty() && mark_y.empty())) {
+            *min_x = std::min(*min_x, this->min_x);
+            *min_y = std::min(*min_y, this->min_y);
+            *max_x = std::max(*max_x, this->max_x);
+            *max_y = std::max(*max_y, this->max_y);
+        }
     }
     
     void DetectedPathLayer::updateCosts(costmap_2d::Costmap2D &master_grid, int min_i, int min_j, int max_i, int max_j) {
@@ -68,17 +70,17 @@ namespace costmap_2d {
         mark_x.clear();
         mark_y.clear();
 
-        double dphi = 0.0;
+        double phi = 0.0;
         double r = 0.0;
         double x = 0.0;
         double y = 0.0;
 
-        for (unsigned int h = FRAME_STARTING_IDX; h < FRAME_HEIGHT; h++) {
+        for (unsigned int h = FRAME_STARTING_IDX; h < FRAME_ENDING_IDX; h++) {
             for (unsigned int w = 0; w < FRAME_WIDTH; w++) {
                 if (!frame[h*FRAME_WIDTH + w]) {
-                    dphi = atan2(h - FRAME_HEIGHT/2.0, CAMERA_FOCAL_LENGTH);
+                    phi = atan2(h - FRAME_HEIGHT/2.0, CAMERA_FOCAL_LENGTH);
                     
-                    r = -CAMERA_HEIGHT/tan(PI - CAMERA_PITCH - dphi);
+                    r = -CAMERA_HEIGHT*(cos(PHI - phi)/sin(PHI - phi));
                     x = CAMERA_X + r;
 
                     r = r*COS_CAMERA_PITCH + CAMERA_HEIGHT*SIN_CAMERA_PITCH;
@@ -86,14 +88,15 @@ namespace costmap_2d {
 
                     mark_x.push_back(robot_x + x*cos(robot_yaw) - y*sin(robot_yaw));
                     mark_y.push_back(robot_y + x*sin(robot_yaw) + y*cos(robot_yaw));
-                    // std::cout << "x: " << mark_x.back() << ", y: " << mark_y.back() << std::endl;
                 }
             }
         }
 
-        min_x = *std::min_element(mark_x.begin(), mark_x.end());
-        min_y = *std::min_element(mark_y.begin(), mark_y.end());
-        max_x = *std::max_element(mark_x.begin(), mark_x.end());
-        max_y = *std::max_element(mark_y.begin(), mark_y.end());
+        if (!(mark_x.empty() && mark_y.empty())) {
+            min_x = *std::min_element(mark_x.begin(), mark_x.end());
+            min_y = *std::min_element(mark_y.begin(), mark_y.end());
+            max_x = *std::max_element(mark_x.begin(), mark_x.end());
+            max_y = *std::max_element(mark_y.begin(), mark_y.end());
+        }
     }
 }

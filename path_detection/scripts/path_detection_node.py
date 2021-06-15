@@ -17,9 +17,10 @@ class PathDetector:
 
         # parameters for tuning
         self.K = 2  # number of dominant colors to extract in initialization
-        self.offset_lower = [15, 25, 20]  # [H,S,V] negative offset
-        self.offset_upper = [15, 25, 20]  # [H,S,V] positive offset
+        self.offset_lower = [15, 25, 55]  # [H,S,V] negative offset
+        self.offset_upper = [15, 25, 55]  # [H,S,V] positive offset
         self.field_of_vision = None
+        self.operating_area = None
         self.controller = self.Controller(pub)
     
     class FieldOfVision:
@@ -149,14 +150,27 @@ class PathDetector:
 
         
     def initialize(self, img):
-        # Create field of vision mask for find_path_center
+        # Create the field of vision mask for find_path_center
         if (self.field_of_vision is None):
             shape = img.shape[0:2]
-            lower_width = shape[1]*3.0
-            upper_width = shape[1]/2.0
             height = shape[0]/1.5
+            # lower_width = shape[1]*3.0
+            # upper_width = shape[1]/2.0
+            lower_width = shape[1]
+            upper_width = shape[1]
 
             self.field_of_vision = self.FieldOfVision(shape, lower_width, upper_width, height, type='Centralized')
+        
+        # Create the minimal operating area mask
+        if (self.operating_area is None):
+            shape = img.shape[0:2]
+            height = 250.0
+            # lower_width = 1.8*shape[1]
+            # upper_width = lower_width - height/(shape[0]/1.5)*(shape[1]*3.0 - shape[1]/2.0)
+            lower_width = shape[1]
+            upper_width = shape[1]
+
+            self.operating_area = self.FieldOfVision(shape, lower_width, upper_width, height, type='Centralized')
 
         # extract part of the image in the close area of camera
         [sizeY, sizeX, sizeColor] =  img.shape
@@ -195,12 +209,16 @@ class PathDetector:
 
     def detectPath(self, img):
         mask_comb = self.create_mask(img)
+        cv2.bitwise_or(mask_comb, 255*self.operating_area.mask, mask_comb)
+        # img = self.find_path_center(img, mask_comb)
+
         dp = DetectedPath()
         dp.height = mask_comb.shape[0]
         dp.width = mask_comb.shape[1]
         dp.frame = list(mask_comb.flatten())
         self.pub.publish(dp)
-        # img = self.find_path_center(img, mask_comb)
+
+        return img, mask_comb
 
         return img, mask_comb
 
@@ -227,8 +245,12 @@ class PathDetector:
         mask_comb = mask_comb*self.field_of_vision.mask
 
         # Find the largest contour
-        _, cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)       
-        cnt = max(cnts, key=cv2.contourArea)
+        _, cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        try:       
+            cnt = max(cnts, key=cv2.contourArea)
+        except:
+            print("Unable to find clear path")   
+            return mask_comb      
 
         # Extract other contours apart from the largest        
         out = numpy.zeros(mask_comb.shape, numpy.uint8)
@@ -241,7 +263,11 @@ class PathDetector:
         
         # Find and fill(close) the largest contour
         _, cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        cnt2 = max(cnts, key=cv2.contourArea)        
+        try:
+            cnt2 = max(cnts, key=cv2.contourArea)  
+        except:
+            print("Unable to find clear path")      
+            return mask_comb        
         cv2.fillPoly(mask_comb, pts=[cnt2], color=(255, 255, 255))
 
         return mask_comb
@@ -324,6 +350,7 @@ class PathDetector:
         # show img with detected path and mask
         imgDet, mask_comb = self.detectPath(img)
         cv2.drawContours(imgDet, self.field_of_vision.contours, -1, (0, 0, 255), 3)
+        cv2.drawContours(imgDet, self.operating_area.contours, -1, (0, 255, 255), 3)
 
         cv2.imshow("mask", mask_comb)
         cv2.imshow("path", imgDet)
