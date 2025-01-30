@@ -10,7 +10,6 @@
     <xacro:include filename="$(find mrvk_description)/urdf/lidar_macro.urdf.xacro"/>
     <xacro:include filename="$(find mrvk_description)/urdf/camera_macro.urdf.xacro"/>
     <xacro:include filename="$(find mrvk_description)/urdf/ultrasonic_sensor_macro.urdf.xacro"/>
-    <xacro:include filename="$(find mrvk_description)/urdf/landmark_macro.urdf.xacro"/>
 
 
     
