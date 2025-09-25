@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import math
 import rospy
 import numpy
@@ -36,7 +36,7 @@ class PathDetector:
             self.control_zone = self.create_control_zone(shape, upper_width, height)
 
             _, thresh = cv2.threshold(self.mask, 0, 255, 0)
-            _, self.contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            self.contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
             self.shape = shape
             self.lower_width = lower_width
@@ -109,6 +109,10 @@ class PathDetector:
                     return y + rising_slew_rate
 
                 return u
+            
+            if len(x) < 4 or len(y) < 4:
+                rospy.logwarn("Insufficient path points for control computation.")
+                for n in range(N):return
             
             dx = x[-3] - x[0]
             dy = -y[-3] + y[0]
@@ -245,7 +249,7 @@ class PathDetector:
         mask_comb = mask_comb*self.field_of_vision.mask
 
         # Find the largest contour
-        _, cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         try:       
             cnt = max(cnts, key=cv2.contourArea)
         except:
@@ -262,7 +266,7 @@ class PathDetector:
         mask_comb = cv2.morphologyEx(mask_comb, cv2.MORPH_CLOSE, kernel)
         
         # Find and fill(close) the largest contour
-        _, cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        cnts, _ = cv2.findContours(mask_comb, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         try:
             cnt2 = max(cnts, key=cv2.contourArea)  
         except:
@@ -318,7 +322,7 @@ class PathDetector:
                 x[n + 1] = int(M["m10"] / M["m00"])
                 y[n + 1] = int(M["m01"] / M["m00"]) + yn
 
-        for n in range(N):
+        for n in range(N - 1):
             cv2.line(img, (x[n], y[n]), (x[n + 1], y[n + 1]), (0, 255, 0), 5)
         
         idx = self.field_of_vision.control_zone
